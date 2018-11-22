@@ -1,6 +1,6 @@
 # takeaway
 
-> A Vue.js project
+> hello world
 
 ## Build Setup
 
