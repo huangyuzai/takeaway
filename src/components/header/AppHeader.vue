@@ -1,5 +1,5 @@
 <template>
-  <div class="AppHeader" :style="{background: 'url('+ seller.avatar +') no-repeat'}">
+  <div class="AppHeader">
     <div class="headerContent">
       <div class="avatar">
         <img :src="seller.avatar" alt="">
@@ -17,14 +17,28 @@
           <span class="supports">{{seller.supports[0].description}}</span>
         </div>
       </div>
-      <div class="descNum">
-        <span class="Num">5个<span class="fa fa-angle-right" style='margin-left: 4px;'></span></span>
+      <div class="descNum" @click="showDetailBtn">
+        <span class="Num" v-if="seller.supports">{{seller.supports.length}}个<span class="icon-keyboard_arrow_right" style='margin-left: 2px;'></span></span>
       </div>
     </div>
     <div class="bulletin">
       <span class='bulletinIcon'></span>
       <p class="bulletinDesc">{{seller.bulletin}}</p>
-      <span class="fa fa-angle-right" style='font-size: 10px; color: rgb(255,255,255)'></span>
+      <span class="icon-keyboard_arrow_right" style='font-size: 10px; color: rgb(255,255,255)'></span>
+    </div>
+    <div class="backgroundImg">
+      <img :src="seller.avatar" alt="" width="100%" >
+    </div>
+    <div class="sellerDetail" v-show="showDetail">
+      <div class="detailContainer clearfix">
+        <div class="detailMain">
+          <h1 class="detailTitle">{{seller.name}}</h1>
+        </div>
+      </div>
+      <div class="detailClose" @click="hideDetailBtn">
+        <i class="icon-close"></i>
+      </div>
+      <div class="detailBg"></div>
     </div>
   </div>
 </template>
@@ -34,6 +48,21 @@ export default {
   name: 'AppHeader',
   props: {
     seller: Object
+  },
+  data () {
+    return {
+      showDetail: false
+    }
+  },
+  methods: {
+    // 显示商店详情
+    showDetailBtn () {
+      this.showDetail = true
+    },
+    // 隐藏商店详情
+    hideDetailBtn () {
+      this.showDetail = false
+    }
   },
   created () {
     this.iconType = ['decrease', 'discount', 'special', 'invoice', 'guarantee']
@@ -46,6 +75,9 @@ export default {
 @import '../../common/stylus/main.styl'
   .AppHeader
     background-size: 100% !important
+    position: relative
+    overflow: hidden
+    background-color: rgba(7,17,27,.5)
     .headerContent
       padding: 0 12px
       overflow: hidden
@@ -156,5 +188,51 @@ export default {
         width: 315px
         margin-right: 4px
         ellipsis()
-
+    .backgroundImg
+      position: absolute
+      top: 0
+      left: 0
+      width: 100%
+      height: 100%
+      z-index: -1
+      filter: blur(10px)
+    .sellerDetail
+      width: 100%
+      height: 100%
+      background: rgba(7,17,27,.8)
+      position: fixed
+      top: 0
+      left: 0
+      z-index: 9
+      overflow: auto
+      .detailContainer
+        width: 100%
+        min-height: 100%
+        .detailMain
+          margin-top: 64px
+          padding-bottom: 64px
+          .detailTitle
+            font-size: 16px
+            font-weight: 700
+            color: rgb(255,255,255)
+            line-height: 16px
+            text-align: center
+            margin-bottom: 16px
+      .detailClose
+        position: relative
+        width: 32px
+        height: 32px
+        margin: -64px auto 0 auto
+        clear: both
+        font-size: 32px
+        color: rgba(255,255,255,.5)
+      .detailBg
+        width: 100%
+        height: 100%
+        position: absolute
+        top: 0
+        left: 0
+        background: rgba(7,17,27,.8)
+        filter: blur(10px)
+        z-index: -1
 </style>
