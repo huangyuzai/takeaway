@@ -3,7 +3,7 @@
     <!-- 左边菜单 -->
     <div class="menu-wrapper" ref="menuWrapper">
       <ul class="menu-nav">
-        <li class="menu-item" v-for="item of goods" :key="item.index">
+        <li class="menu-item" v-for="(item,index) of goods" :key="item.index" :class="{'current': currentIndex === index}">
           <span class="text">
             <span class="icon" :class="iconType[item.type]" v-show="item.type > 0"></span>{{item.name}}
           </span>
@@ -13,7 +13,7 @@
     <!-- 右边商品区 -->
     <div class="goods-wrapper" ref="goodsWrapper">
       <ul class="goodsContainer">
-        <li class="containerItems" v-for="item of goods" :key="item.index">
+        <li class="containerItems foodWrapper" v-for="item of goods" :key="item.index">
           <h1 class="categoryTitle">{{item.name}}</h1>
           <ul class="goodsCentent">
             <li class="goodsItems" v-for="items of item.foods" :key="items.index">
@@ -53,17 +53,29 @@ export default {
   },
   data () {
     return {
-      goods: [] // 商品数据
+      goods: [], // 商品数据
+      listHeight: [], // 每个分类的区间
+      scrollY: 0
     }
   },
   mounted () {
     // 请求商品数据
     this.requestData()
+    // 初始化bettle-scroll
     // 图标
     this.iconType = ['decrease', 'discount', 'special', 'invoice', 'guarantee']
-    // 初始化DOM元素
-    this.scroll = new BScroll(this.$refs.menuWrapper)
-    this.scroll = new BScroll(this.$refs.goodsWrapper)
+  },
+  computed: {
+    currentIndex () {
+      for (let i = 0; i < this.listHeight.length; i++) {
+        let height1 = this.listHeight[i]
+        let height2 = this.listHeight[i + 1]
+        if (!height2 || (this.scrollY >= height1 && this.scrollY < height2)) {
+          return i
+        }
+      }
+      return 0
+    }
   },
   methods: {
     // 请求商品数据
@@ -72,9 +84,34 @@ export default {
         const data = res.data
         if (data.errno === ERR_OK) {
           this.goods = data.data
-          console.log(this.goods)
+          this.$nextTick(() => { // 请求完以后执行
+            this.initBScroll()
+            this.calculateHeight()
+          })
         }
       })
+    },
+    // 初始化 bettle-scroll
+    initBScroll () {
+      // 初始化DOM元素
+      this.menuScroll = new BScroll(this.$refs.menuWrapper)
+      this.goodsScroll = new BScroll(this.$refs.goodsWrapper, {
+        probeType: 3 // 代表实时返回滚动条的位置
+      })
+      this.goodsScroll.on('scroll', (pos) => {
+        this.scrollY = Math.abs(Math.round(pos.y)) // 转化为正整数
+      })
+    },
+    // 左右联动
+    calculateHeight () {
+      let foodList = this.$refs.goodsWrapper.getElementsByClassName('foodWrapper') // 获取每个商品的分类的元素
+      let height = 0
+      this.listHeight.push(height)
+      for (let i = 0; i < foodList.length; i++) {
+        let item = foodList[i]
+        height += item.clientHeight
+        this.listHeight.push(height)
+      }
     }
   }
 }
@@ -107,6 +144,10 @@ export default {
         padding: 0 12px
         width: 100%
         box-sizing: border-box
+        &.current
+          background: #fff
+          .text
+            border-none()
         .text
           display: table-cell
           vertical-align: middle
@@ -152,6 +193,7 @@ export default {
             .goodsInfo
               padding: 18px
               overflow: hidden
+              display: flex
               .goodsImg
                 width: 64px
                 height: 64px
@@ -178,14 +220,15 @@ export default {
                 .salesVolume
                   margin-right: 12px
               .goodsPrice
-                margin-top: 8px
                 font-size: 10px
                 font-weight: normal
                 color: rgb(240,20,20)
+                line-height: 24px
                 .price
                   font-size: 14px
                   font-weight: 700
                 .oldPrice
                   color: rgb(147,153,159)
                   text-decoration: line-through
+                  margin-left: 8px
 </style>
