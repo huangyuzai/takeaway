@@ -3,7 +3,7 @@
     <!-- 左边菜单 -->
     <div class="menu-wrapper" ref="menuWrapper">
       <ul class="menu-nav">
-        <li class="menu-item" v-for="(item,index) of goods" :key="item.index" :class="{'current': currentIndex === index}">
+        <li class="menu-item" v-for="(item,index) of goods" :key="item.index" :class="{'current': currentIndex === index}" @click="handleCategory(index)">
           <span class="text">
             <span class="icon" :class="iconType[item.type]" v-show="item.type > 0"></span>{{item.name}}
           </span>
@@ -94,7 +94,9 @@ export default {
     // 初始化 bettle-scroll
     initBScroll () {
       // 初始化DOM元素
-      this.menuScroll = new BScroll(this.$refs.menuWrapper)
+      this.menuScroll = new BScroll(this.$refs.menuWrapper, {
+        click: true // betterScroll 阻止了默认行为，所以无法点击，需要设置这个参数才能点击
+      })
       this.goodsScroll = new BScroll(this.$refs.goodsWrapper, {
         probeType: 3 // 代表实时返回滚动条的位置
       })
@@ -112,6 +114,12 @@ export default {
         height += item.clientHeight
         this.listHeight.push(height)
       }
+    },
+    // 左侧分类点击
+    handleCategory (index) {
+      let foodList = this.$refs.goodsWrapper.getElementsByClassName('foodWrapper') // 获取每个商品的分类的元素
+      let el = foodList[index]
+      this.goodsScroll.scrollToElement(el, 1) // 滚动到相应的DOM元素/时间
     }
   }
 }
